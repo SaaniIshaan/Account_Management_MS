@@ -1,5 +1,6 @@
 package com.tekarch.account_managementMS.controllers;
 
+import com.tekarch.account_managementMS.DTO.FundTransferDTO;
 import com.tekarch.account_managementMS.models.Account;
 import com.tekarch.account_managementMS.services.AccountServiceImpl;
 import lombok.AllArgsConstructor;
@@ -10,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @AllArgsConstructor
@@ -22,51 +25,73 @@ public class AccountController {
     @Autowired
     private AccountServiceImpl accountServiceImpl;
 
+    // Create an Account
     @PostMapping()
-    public ResponseEntity<Account> createAccount(
-            @RequestParam Long userId,
-            @RequestBody Account account) {
-   //     return new ResponseEntity<>(accountServiceImpl.createAccount(userId, account), HttpStatus.CREATED);
-        Account createdAccount = accountServiceImpl.createAccount(userId, account);
-        return ResponseEntity.ok(createdAccount);
+    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
+        return new ResponseEntity<>(accountServiceImpl.createAccount(account),HttpStatus.CREATED);
     }
 
-    //Retrieve a single account by its id
+    // Retrieve a single account by its id
     @GetMapping("/{accountId}")
     public ResponseEntity<Account> getAccountById(@PathVariable Long accountId){
-        return accountServiceImpl.getAccountById(accountId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+        return new ResponseEntity<>(accountServiceImpl.getAccountByAccountId(accountId),HttpStatus.OK);
 
+    }
+    // Retrieve All Accounts
     @GetMapping()
     public ResponseEntity<List<Account>> getAllaccounts(){
         return new ResponseEntity<>(accountServiceImpl.getAllAccounts(),HttpStatus.OK);
     }
 
-    // 3. Retrieve all accounts for a user
+    // Retrieve all accounts for a user
     @GetMapping("/userId")
     public ResponseEntity<List<Account>> getAllAccounts(@PathVariable Long userId) {
-        List<Account> accounts = accountServiceImpl.getAccountByUserUserId(userId);
+        List<Account> accounts = accountServiceImpl.getAccountById(userId);
         return ResponseEntity.ok(accounts);
     }
 
-    // 2. Update an account
-    @PutMapping("/{accountId}")
-    public ResponseEntity<Account> updateAccount(
-            @PathVariable Long accountId,
-            @RequestBody Account account) {
-        Account updatedAccount = accountServiceImpl.updateAccount(accountId, account);
-        return ResponseEntity.ok(updatedAccount);
+    // Update an account
+    @PutMapping()
+    public ResponseEntity<Account> updateAccount(@RequestBody Account account){
+        return new ResponseEntity<>(accountServiceImpl.updateAccount(account),HttpStatus.OK);
     }
 
-    // 5. Delete an account by its ID
+    // Delete an account by its ID
     @DeleteMapping("/{accountId}")
-    public ResponseEntity<String> deleteAccount(@PathVariable Long accountId) {
-        accountServiceImpl.deleteAccount(accountId);
-        return ResponseEntity.ok("Account deleted successfully");
+    public void deleteAccount(@PathVariable Long accountId) {
+        accountServiceImpl.deleteAccountById(accountId);
     }
 
+    // Delete an account by its accountType
+    @DeleteMapping
+    public void deleteAccountByType(@RequestParam Long userId, @RequestParam String accountType) {
+        accountServiceImpl.deleteAccountByType(userId, accountType);
+    }
+
+    @GetMapping("/balance2")
+    public BigDecimal getAccountBalance(@RequestParam Long accountId) {
+        return accountServiceImpl.getAccountBalance(accountId);
+    }
+
+    @GetMapping("/transfers")
+    public List<FundTransferDTO> getFundTransfers(@RequestParam Long accountId) {
+        return accountServiceImpl.getFundTransfers(accountId);
+    }
+
+    @GetMapping("/balance")
+    public List<BigDecimal> getUserBalance(@RequestParam Long userId){
+        return accountServiceImpl.getUserBalances(userId);
+    }
+
+    @PutMapping("/accounts")
+    public ResponseEntity<String> updateAccountByQuery(
+            @RequestParam Long userId,
+            @RequestParam Long accountId,
+            @RequestBody Account updatedAccount) {
+
+        accountServiceImpl.updateAccountByQuery(userId, accountId, updatedAccount);
+        return ResponseEntity.ok("Account updated successfully.");
+    }
 
     @ExceptionHandler
     public ResponseEntity<String> respondWithError(Exception e){

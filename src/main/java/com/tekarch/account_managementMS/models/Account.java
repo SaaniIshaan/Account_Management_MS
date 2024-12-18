@@ -1,5 +1,6 @@
 package com.tekarch.account_managementMS.models;
 
+import com.tekarch.account_managementMS.DTO.UserDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,8 +26,8 @@ public class Account {
     @Column(nullable = false, unique = true, length = 20)
     private String account_number;
 
-    @Column(nullable = false, length = 20)
-    private String account_type;
+    @Column( name = "account_type",nullable = false, length = 20)
+    private String accountType;
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
@@ -39,6 +40,9 @@ public class Account {
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime created_at;
+
+    @Column(name = "user_id", nullable = false, insertable = false, updatable = false)
+    private Long userId;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

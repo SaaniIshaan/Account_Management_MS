@@ -1,26 +1,27 @@
-
 package com.tekarch.account_managementMS.models;
 
+import com.tekarch.account_managementMS.DTO.UserDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Setter
-@Getter
+
 @Entity
+@Data
 @Table(name = "users")
 public class User {
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Account> accounts = new ArrayList<>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id")  // Explicitly specify the database column name
     private Long userId;
 
     @Column(nullable = false, unique = true, length = 50)
@@ -46,10 +47,6 @@ public class User {
 
     @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'pending'")
     private String kyc_status = "pending";
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Account> accounts = new ArrayList<>();
-
 
 
 }
