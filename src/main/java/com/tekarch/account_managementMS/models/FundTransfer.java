@@ -18,11 +18,11 @@ public class FundTransfer {
     private Long transferId;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST) // Relationship with Account for sender
-    @JoinColumn(name = "sender_account_id", referencedColumnName = "account_id", nullable = false)
+    @JoinColumn(name = "sender_account_id",  nullable = false)
     private Account senderAccountId;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST) // Relationship with Account for receiver
-    @JoinColumn(name = "receiver_account_id", referencedColumnName = "account_id", nullable = false)
+    @JoinColumn(name = "receiver_account_id", nullable = false)
     private Account receiverAccountId;
 
     @Column(nullable = false, precision = 15, scale = 2)
@@ -40,4 +40,6 @@ public class FundTransfer {
     //   @ManyToOne
     //   @JoinColumn(name = "account_id")
     //   private List<Account> account;
+
+
 }

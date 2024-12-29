@@ -1,6 +1,7 @@
 package com.tekarch.account_managementMS.services;
 
 import com.tekarch.account_managementMS.DTO.FundTransferDTO;
+import com.tekarch.account_managementMS.DTO.UserDTO;
 import com.tekarch.account_managementMS.models.Account;
 
 import java.math.BigDecimal;
@@ -17,7 +18,11 @@ public interface AccountService {
     Set<Account> getAccountByUserUserId(Long userId);
     void deleteAccount(Long accountId);
   */
-    Account createAccount (Account account);
+//    void validateUser(Long userId);
+//    Account createAccount (Account account);
+ //  UserDTO getUserDetails(Long userId);
+ Account createAccount(Account account);
+//   Account createAccount(Account account, Long userId);
     Account updateAccount (Account account);
     Account getAccountByAccountId(Long accountId);
     List<Account> getAccountById(Long userId);
@@ -28,6 +33,6 @@ public interface AccountService {
     BigDecimal getAccountBalance(Long accountId);
     List<BigDecimal> getUserBalances(Long userId);
     List<FundTransferDTO> getFundTransfers(Long accountId);
-    void validateUser(Long userId);
 
+    boolean accountExistsByAccountNumber(String accountNumber);
 }

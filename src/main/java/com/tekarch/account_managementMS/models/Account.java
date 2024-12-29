@@ -23,8 +23,8 @@ public class Account {
     @Column(name = "account_id", nullable = false)
     private Long accountId;
 
-    @Column(nullable = false, unique = true, length = 20)
-    private String account_number;
+    @Column(name = "account_number", nullable = false, unique = true, length = 20)
+    private String accountNumber;
 
     @Column( name = "account_type",nullable = false, length = 20)
     private String accountType;
@@ -42,11 +42,18 @@ public class Account {
     private LocalDateTime created_at;
 
     @Column(name = "user_id", nullable = false, insertable = false, updatable = false)
-    private Long userId;
+    private Long userId;    // foreign key to the users table
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+//    public Account() {
+//        this.balance = BigDecimal.ZERO;
+//        this.currency = "USD";
+//        this.created_at = LocalDateTime.now();
+//    }
+
 
  //   @OneToMany(mappedBy = "account")
  //   private List<FundTransfer> transfers;

@@ -1,19 +1,23 @@
 package com.tekarch.account_managementMS.controllers;
 
 import com.tekarch.account_managementMS.DTO.FundTransferDTO;
+import com.tekarch.account_managementMS.DTO.UserDTO;
 import com.tekarch.account_managementMS.models.Account;
 import com.tekarch.account_managementMS.services.AccountServiceImpl;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @AllArgsConstructor
@@ -25,11 +29,86 @@ public class AccountController {
     @Autowired
     private AccountServiceImpl accountServiceImpl;
 
+    @Autowired
+    private RestTemplate restTemplate;
+    private final String USER_SERVICE_URL = "http://localhost:8081/users/";
     // Create an Account
+//    @PostMapping()
+//    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
+//        return new ResponseEntity<>(accountServiceImpl.createAccount(account),HttpStatus.CREATED);
+//    }
+
     @PostMapping()
-    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
-        return new ResponseEntity<>(accountServiceImpl.createAccount(account),HttpStatus.CREATED);
+    public ResponseEntity<Account> createAccount(@Valid @RequestBody Account account) {
+        try {
+            // Call UserService to validate or get user details
+            Long userId = account.getUserId();
+            ResponseEntity<UserDTO> userResponse = restTemplate.getForEntity( USER_SERVICE_URL+userId, UserDTO.class);
+
+            if (userResponse.getStatusCode() == HttpStatus.OK) {
+                // Proceed to create account
+                Account createdAccount = accountServiceImpl.createAccount(account);
+                return ResponseEntity.status(HttpStatus.CREATED).body(createdAccount);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            }
+
+        } catch (HttpClientErrorException.NotFound ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // User not found
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Handle other exceptions
+        }
     }
+
+  /*  @PostMapping
+    public ResponseEntity<?> createAccount(@RequestBody Account account) {
+        try {
+            // Assuming account has a userId field to fetch the user details
+            String url = USER_SERVICE_URL + account.getUserId();
+
+            // Calling the user-service to get user information
+            User user = restTemplate.getForObject(url, User.class);
+
+            if (user == null) {
+                // If user is not found in the user microservice
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            // Setting user details to account or performing any other necessary operations
+            account.setUser(user);
+
+            // Call the service method to save the account
+            Account createdAccount = accountServiceImpl.createAccount(account);
+
+            // Returning the created account as response
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdAccount);
+        } catch (Exception e) {
+            // Log and handle the exception appropriately
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while creating the account: " + e.getMessage());
+        }
+    }*/
+
+ /*   @GetMapping("/users/{userId}")
+    public ResponseEntity<UserDTO> getUserDetails(@PathVariable Long userId) {
+        UserDTO userDTO = accountServiceImpl.getUserDetails(userId);
+        return ResponseEntity.ok(userDTO);
+    }
+
+    @PostMapping
+    public ResponseEntity<Account> createAccount(@RequestBody Account account, @RequestParam Long userId) {
+        Account createdAccount = accountServiceImpl.createAccount(account, userId);
+        return ResponseEntity.ok(createdAccount);
+    }*/
+
+
+
+
+ /*   @PostMapping
+    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
+        Account createdAccount = accountServiceImpl.createAccount(account);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdAccount);
+    }*/
 
     // Retrieve a single account by its id
     @GetMapping("/{accountId}")
@@ -51,7 +130,7 @@ public class AccountController {
     }
 
     // Update an account
-    @PutMapping()
+    @PutMapping("/{accountId}")
     public ResponseEntity<Account> updateAccount(@RequestBody Account account){
         return new ResponseEntity<>(accountServiceImpl.updateAccount(account),HttpStatus.OK);
     }
@@ -83,7 +162,7 @@ public class AccountController {
         return accountServiceImpl.getUserBalances(userId);
     }
 
-    @PutMapping("/accounts")
+    @PutMapping()
     public ResponseEntity<String> updateAccountByQuery(
             @RequestParam Long userId,
             @RequestParam Long accountId,
@@ -100,6 +179,11 @@ public class AccountController {
                 e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(HttpMessageNotWritableException.class)
+    public ResponseEntity<String> handleHttpMessageNotWritableException(HttpMessageNotWritableException ex) {
+        logger.error("Error serializing JSON", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
+    }
 
 
 }

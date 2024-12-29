@@ -1,15 +1,18 @@
 package com.tekarch.account_managementMS.DTO;
 
 import com.tekarch.account_managementMS.models.User;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class UserDTO {
 
     private Long userId;
-    private String user_name;
+    private String username;
     private String email;
     private String password_hash;
     private String phone_number;
